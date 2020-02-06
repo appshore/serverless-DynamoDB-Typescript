@@ -31,8 +31,8 @@ yarn offline
 ## Testing
 
 ```
-# Run tests
-yarn tests
+# Run test
+yarn test
 
 # Run coverage
 yarn coverage
