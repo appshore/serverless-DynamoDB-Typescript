@@ -28,7 +28,10 @@
     "typescript": "^3.7.5"
   },
   "dependencies": {
+    "@types/slack-node": "^0.1.2",
     "@types/uuid": "^3.4.7",
+    "serverless-offline-sns": "^0.68.0",
+    "slack-node": "^0.1.8",
     "uuid": "^3.4.0"
   }
 }
