@@ -1,17 +1,36 @@
-import { check } from '../src/handlers/health';
+import * as AWS from 'aws-sdk';
+import * as AWSMock from 'aws-sdk-mock';
 
-describe('Sensor', () => {
-  test('the returned object', () => {
-    const response = check();
+import { GetItemInput } from 'aws-sdk/clients/dynamodb';
 
-    expect(response).toHaveProperty('statusCode');
-    expect(response.statusCode).toEqual(200);
+describe('Sensor Read', () => {
+  test('from mocked dynamoDB', async () => {
+    const TableName = 'SensorData';
+    const itemId = 'Item1';
 
-    expect(response).toHaveProperty('body');
-    expect(typeof response.body).toBe('string');
+    AWSMock.setSDKInstance(AWS);
+    AWSMock.mock('DynamoDB.DocumentClient', 'get', (_params: GetItemInput, callback: Function) => {
+      callback(null, {
+        itemId: 'item1',
+        content: 'content1',
+      });
+    });
 
-    const body = JSON.parse(response.body);
-    expect(body).toHaveProperty('message');
-    expect(body.message).toBe('Function Health executed successfully!');
+    const dynamo = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10' });
+    const result = await dynamo
+      .get({
+        TableName,
+        Key: {
+          itemId,
+        },
+      })
+      .promise();
+
+    expect(result).toStrictEqual({
+      itemId: 'item1',
+      content: 'content1',
+    });
+
+    AWSMock.restore('DynamoDB.DocumentClient');
   });
 });
