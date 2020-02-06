@@ -1,6 +1,6 @@
 import 'source-map-support/register';
 
-import { crudReturnInter } from './crunInterface';
+import { crudReturnInter } from './crudInterface';
 
 /**
  * check health
