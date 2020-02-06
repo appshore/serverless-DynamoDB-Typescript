@@ -2,9 +2,12 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 import 'source-map-support/register';
 
 import { crudReturnInter } from '../types/crudInterface';
+import { read } from './sensorRead';
 
 import { dynamo } from '../utils/dynamo';
+import * as email from '../utils/email';
 import { logError, logSuccess } from '../utils/logs';
+import * as slack from '../utils/slack';
 
 /**
  * Remove one item
@@ -13,7 +16,13 @@ import { logError, logSuccess } from '../utils/logs';
 const remove = async (event: APIGatewayProxyEvent): Promise<crudReturnInter> => {
   try {
     const itemId = event && event.pathParameters && event.pathParameters.itemId;
+    const timestamp = new Date().toISOString();
     const { TableName } = process.env;
+
+    const { body, statusCode } = await read(event);
+    if (statusCode === 400) {
+      throw `Item ${itemId} unknown`;
+    }
 
     // delete one item by the itemId
     await dynamo
@@ -24,6 +33,16 @@ const remove = async (event: APIGatewayProxyEvent): Promise<crudReturnInter> => 
         },
       })
       .promise();
+
+    await email.send({
+      Subject: `Item ${itemId} on table ${TableName} deleted at ${timestamp}`,
+      Message: JSON.stringify(body, null, 2),
+    });
+
+    await slack.post({
+      channel: '#sensorBot',
+      text: `Item ${itemId} on table ${TableName} deleted at ${timestamp} ${JSON.stringify(body, null, 2)}`,
+    });
 
     return logSuccess({
       message: `Item ${itemId} deleted`,
