@@ -2,7 +2,7 @@
   "name": "serverless-dynamodb-typescript",
   "version": "1.0.0",
   "description": "CRUD operations with Serverless, AWS, DynamoDB and Typescript",
-  "author": "Brice (https://github.com/appshore/serverless-dynamodb-typescript)",
+  "author": "Brice@AppShore (https://github.com/appshore/serverless-DynamoDB-Typescript)",
   "license": "MIT",
   "main": "handler.js",
   "scripts": {
