@@ -9,12 +9,14 @@ provider:
 
   deploymentBucket:
     name: ${self:provider.stackName}
-  
+
   environment:
     stage: ${self:provider.stage}
+    SlackAPIToken: ${ssm:${self:provider.stage}/slack.apiToken~true}
     TableName: ${ssm:${self:provider.stage}/dynamodb.tableName~true}
+    TopicArn: ${ssm:${self:provider.stage}/sns.topicArn~true}
 
-  iamRoleStatements: 
+  iamRoleStatements:
     # Gives permissions to a specific DynamoDB table
     - Effect: Allow
       Action:
@@ -25,19 +27,19 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: 'arn:aws:dynamodb:us-east-1:*:SensorData'
+      Resource: "arn:aws:dynamodb:us-east-1:*:SensorData"
     # Gives permissions to some specific ssm keys
     - Effect: Allow
       Action:
         - ssm:GetParameter
-      Resource: 'arn:aws:ssm:us-east-1:*:${self:provider.stage}/*'
+      Resource: "arn:aws:ssm:us-east-1:*:${self:provider.stage}/*"
 
 plugins:
   - serverless-bundle # replace webpack, eslint...
   - serverless-dynamodb-local
   - serverless-offline-ssm
+  - serverless-offline-sns
   - serverless-offline
-
 
 package:
   individually: true
@@ -65,10 +67,12 @@ custom:
         sources:
           - table: SensorData
             sources: [./dataset/SensorData.json]
-  
+
   # set local keys
   serverless-offline-ssm:
-    'local/dynamodb.tableName': 'SensorData'
+    "local/dynamodb.tableName": "SensorData"
+    "local/slack.apiToken": "slack-fake-token"
+    "local/sns.topicArn": { "Ref": "SNSTopic" }
 
 resources:
   Resources:
@@ -86,6 +90,21 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+
+    # set SNS Topic
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: SNS Topic
+        TopicName: ${self:service}-${self:provider.stage}-topic
+
+    # add a sub to the topic that will send an email
+    SNSSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: test@example.com
+        Protocol: email
+        TopicArn: { "Ref": "SNSTopic" }
 
 functions:
   # Health check function to make sure the stack is up and running
