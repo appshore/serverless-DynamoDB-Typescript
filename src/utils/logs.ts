@@ -1,4 +1,4 @@
-import { crudReturnInter } from '../handlers/crudInterface';
+import { crudReturnInter } from '../types/crudInterface';
 
 /**
  * Log error

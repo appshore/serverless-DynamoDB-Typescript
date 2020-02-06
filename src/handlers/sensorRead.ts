@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import 'source-map-support/register';
 
-import { crudReturnInter } from './crudInterface';
+import { crudReturnInter } from '../types/crudInterface';
 
 import { dynamo } from '../utils/dynamo';
 import { logError, logSuccess } from '../utils/logs';
