@@ -1,0 +1,143 @@
+service: serverless-dynamodb-typescript
+
+provider:
+  name: aws
+  stackName: ${self:service}-${self:provider.stage}
+  runtime: nodejs10.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${env:stage, 'local'}
+
+  deploymentBucket:
+    name: ${self:provider.stackName}
+  
+  environment:
+    stage: ${self:provider.stage}
+    TableName: ${ssm:${self:provider.stage}/dynamodb.tableName~true}
+
+  iamRoleStatements: 
+    # Gives permissions to a specific DynamoDB table
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:us-east-1:*:SensorData'
+    # Gives permissions to some specific ssm keys
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+      Resource: 'arn:aws:ssm:us-east-1:*:${self:provider.stage}/*'
+
+plugins:
+  - serverless-bundle # replace webpack, eslint...
+  - serverless-dynamodb-local
+  - serverless-offline-ssm
+  - serverless-offline
+
+
+package:
+  individually: true
+  excludeDevDependencies: true
+  exclude:
+    - test/**
+    - .circleci/config.yml
+    - .git
+    - package-lock.json
+    - yarn.lock
+    - node_modules/aws-sdk/**
+    - node_modules/serverless/**
+
+custom:
+  # Dynamodb in local with initial upload of few records
+  dynamodb:
+    stages:
+      - local
+    start:
+      inMemory: true
+      migrate: true
+      seed: true
+    seed:
+      local:
+        sources:
+          - table: SensorData
+            sources: [./dataset/SensorData.json]
+  
+  # set local keys
+  serverless-offline-ssm:
+    'local/dynamodb.tableName': 'SensorData'
+
+resources:
+  Resources:
+    # set dynamodb table
+    sensorDataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: SensorData
+        AttributeDefinitions:
+          - AttributeName: itemId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: itemId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+functions:
+  # Health check function to make sure the stack is up and running
+  health:
+    handler: dist/health.check
+    events:
+      - http:
+          method: get
+          path: health
+          cors: true
+
+  # Create a new item
+  sensorCreate:
+    handler: dist/sensor.create
+    events:
+      - http:
+          method: post
+          path: sensor
+          cors: true
+
+  # List existing items
+  sensorList:
+    handler: dist/sensor.list
+    events:
+      - http:
+          method: get
+          path: sensor
+          cors: true
+
+  # Read a specific item
+  sensorRead:
+    handler: dist/sensor.read
+    events:
+      - http:
+          method: get
+          path: sensor/{itemId}
+          cors: true
+
+  # Delete a specific item
+  sensorRemove:
+    handler: dist/sensor.remove
+    events:
+      - http:
+          method: delete
+          path: sensor/{itemId}
+          cors: true
+
+  # Update a specific item
+  sensorUpdate:
+    handler: dist/sensor.update
+    events:
+      - http:
+          method: put
+          path: sensor/{itemId}
+          cors: true
