@@ -1,8 +1,6 @@
 import * as AWS from 'aws-sdk';
 import * as AWSMock from 'aws-sdk-mock';
 
-import { GetItemInput } from 'aws-sdk/clients/dynamodb';
-
 describe('Sensor Read', () => {
   test('from mocked dynamoDB', async () => {
     const TableName = 'SensorData';
@@ -13,7 +11,7 @@ describe('Sensor Read', () => {
     };
 
     AWSMock.setSDKInstance(AWS);
-    AWSMock.mock('DynamoDB.DocumentClient', 'get', (_params: GetItemInput, callback: Function) => {
+    AWSMock.mock('DynamoDB.DocumentClient', 'get', (_params, callback: Function) => {
       callback(null, fixture);
     });
 
