@@ -7,13 +7,14 @@ describe('Sensor Read', () => {
   test('from mocked dynamoDB', async () => {
     const TableName = 'SensorData';
     const itemId = 'Item1';
+    const fixture = {
+      itemId: 'item1',
+      content: 'content1',
+    };
 
     AWSMock.setSDKInstance(AWS);
     AWSMock.mock('DynamoDB.DocumentClient', 'get', (_params: GetItemInput, callback: Function) => {
-      callback(null, {
-        itemId: 'item1',
-        content: 'content1',
-      });
+      callback(null, fixture);
     });
 
     const dynamo = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10' });
@@ -26,10 +27,7 @@ describe('Sensor Read', () => {
       })
       .promise();
 
-    expect(result).toStrictEqual({
-      itemId: 'item1',
-      content: 'content1',
-    });
+    expect(result).toStrictEqual(fixture);
 
     AWSMock.restore('DynamoDB.DocumentClient');
   });
