@@ -1,4 +1,4 @@
-import * as Slack from 'slack-node';
+import Slack from 'slack-node';
 
 import { crudReturnInter } from '../types/crudInterface';
 import { postInter } from '../types/slackInterface';
