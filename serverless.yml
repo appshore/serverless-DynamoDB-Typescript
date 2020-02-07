@@ -16,8 +16,9 @@ provider:
     TableName: ${ssm:${self:provider.stage}/dynamodb.tableName~true}
     TopicArn: ${ssm:${self:provider.stage}/sns.topicArn~true}
 
+  # Region and accountId should be set as parameters
   iamRoleStatements:
-    # Gives permissions to a specific DynamoDB table
+    # Permissions to a specific DynamoDB table
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable
@@ -28,11 +29,18 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: "arn:aws:dynamodb:us-east-1:*:SensorData"
-    # Gives permissions to some specific ssm keys
+    # Permissions to some specific ssm keys
     - Effect: Allow
       Action:
         - ssm:GetParameter
       Resource: "arn:aws:ssm:us-east-1:*:${self:provider.stage}/*"
+    # Permissions on SNS
+    - Effect: Allow
+      Action:
+        - SNS:Publish
+        - SNS:Subscribe
+      Resource: { "Ref": "SNSTopic" }
+
 
 plugins:
   - serverless-bundle # replace webpack, eslint...
