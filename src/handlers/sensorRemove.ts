@@ -34,9 +34,8 @@ const remove = async (event: APIGatewayProxyEvent): Promise<crudReturnInter> => 
       })
       .promise();
 
-
-    // Dev note: 
-    // the email and slack functions could be refactored as lambdas subscribing to a service like SQS, SNS or Kinesis
+    // Dev note:
+    // the email and slack functions could be refactored as lambdas subscribing to AWS services like SNS or Kinesis
     // In this case instead of calling them directly, we just need to publish once.
     // certainly a better solution if these functions are implemented in all operations.
 
