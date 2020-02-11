@@ -126,7 +126,7 @@ functions:
 
   # Create a new item
   sensorCreate:
-    handler: dist/sensor.create
+    handler: dist/sensorCreate.create
     events:
       - http:
           method: post
@@ -135,7 +135,7 @@ functions:
 
   # List existing items
   sensorList:
-    handler: dist/sensor.list
+    handler: dist/sensorList.list
     events:
       - http:
           method: get
@@ -144,7 +144,7 @@ functions:
 
   # Read a specific item
   sensorRead:
-    handler: dist/sensor.read
+    handler: dist/sensorRead.read
     events:
       - http:
           method: get
@@ -153,7 +153,7 @@ functions:
 
   # Delete a specific item
   sensorRemove:
-    handler: dist/sensor.remove
+    handler: dist/sensorRemove.remove
     events:
       - http:
           method: delete
@@ -162,7 +162,7 @@ functions:
 
   # Update a specific item
   sensorUpdate:
-    handler: dist/sensor.update
+    handler: dist/sensorUpdate.update
     events:
       - http:
           method: put
